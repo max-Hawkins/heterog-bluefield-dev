@@ -96,4 +96,16 @@ TODO: MPI synchronization issue
 
 ## MiniMD Host/BlueField Execution
 
+Further increasing the complexity of our example programs, let's now look at running
+(MiniMD)[https://github.com/hpcgarage/miniMD/tree/force_on_bf] (a scaled-down version of the
+LAMMPS code) across BlueFields and Hosts. The process of building and executing this is the
+same as above:
+- Allocate nodes
+- Compile separate executables for each architecture
+- From a BlueField node, run a heterogeneous MPI job
+
+Since miniMD is OpenMP-enabled, we'll run two threads on each node.
+
+```console
 TODO
+```
