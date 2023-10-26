@@ -63,12 +63,37 @@ our own code. To simultaneously run on both architectures, separate compilers,
 dependencies, and executables must be properly maintained. Depending on your application,
 this will result in varying difficulty.
 
-TODO
+It's possible to compile both the host and BlueField programs on x86 nodes, but cross-compiling
+BlueField code is beyond the scope of this repository. If you need DOCA libraries,
+(NVIDIA's documentation)[https://docs.nvidia.com/doca/archive/doca-v2.2.0/developer-guide/index.html]
+is very helpful, otherwise, a basic cross-compilation setup can be used.
 
-## Divergent Execution Paths
+Instead, let's start simpler and compile the host executable on the host, and the BlueField
+executable on the BlueField. `hello-bluefield.cpp` is a simple program made to show heterogeneous
+execution and code divergence based on node type. When running code on across traditional
+compute nodes and BlueFields, it's potentially advantageous to have divergent execution paths -
+meaning the BlueField and host nodes execute different or varying amounts of work.
 
-When running code on across traditional compute nodes and BlueFields, it's potentially
-advantageous to have divergent execution paths - meaning the BlueField and host nodes
-execute different or varying amounts of work.
+First, we allocate two nodes then separately compile both versions of the executable. Finally,
+we execute the mpirun command from the BlueField node.
+
+```
+[user@login01]$ salloc -p thor --nodes=2 --ntasks-per-node=2 --time=00:05:00 -w thor008,thorbf3a008
+salloc: Granted job allocation 99999
+[user@thor008]$ mpicxx hello-bluefield.cpp -o hello-bluefield-host.out
+[user@thor008]$ ssh thorbf3a008
+# Change directory to the proper place
+[user@thorbf3a008]$ mpicxx hello-bluefield.cpp -o hello-bluefield-bf.out
+[user@thorbf3a008]$ mpirun -np 2 -H thor008:2 hello-bluefield-host.out : -np 2 -H thorbf3a008:2 hello-bluefield-bf.out
+[thorbf3a008:p3/4::c1] Hello, world. I'm a BlueField node!
+[thorbf3a008:p2/4::c0] Hello, world. I'm a BlueField node!
+=== Job:4 processes ===
+[thor008:p0/4::c0] Hello, world. I'm a host node!
+[thor008:p1/4::c1] Hello, world. I'm a host node!
+```
+
+TODO: MPI synchronization issue
+
+## MiniMD Host/BlueField Execution
 
 TODO
