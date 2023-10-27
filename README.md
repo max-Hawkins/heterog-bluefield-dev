@@ -65,7 +65,7 @@ this will result in varying difficulty.
 
 It's possible to compile both the host and BlueField programs on x86 nodes, but cross-compiling
 BlueField code is beyond the scope of this repository. If you need DOCA libraries,
-(NVIDIA's documentation)[https://docs.nvidia.com/doca/archive/doca-v2.2.0/developer-guide/index.html]
+[NVIDIA's documentation](https://docs.nvidia.com/doca/archive/doca-v2.2.0/developer-guide/index.html)
 is very helpful, otherwise, a basic cross-compilation setup can be used.
 
 Instead, let's start simpler and compile the host executable on the host, and the BlueField
@@ -93,15 +93,64 @@ salloc: Granted job allocation 99999
 ## MiniMD Host/BlueField Execution
 
 Further increasing the complexity of our example programs, let's now look at running
-(MiniMD)[https://github.com/hpcgarage/miniMD/tree/force_on_bf] (a scaled-down version of the
-LAMMPS code) across BlueFields and Hosts. The process of building and executing this is the
+[MiniMD](https://github.com/hpcgarage/miniMD/tree/force_on_bf) (a scaled-down version of the
+LAMMPS code) across BlueFields and Hosts. Since miniMD is OpenMP-enabled, we'll run two
+threads on each node.
+
+The process of building and executing this is the
 same as above:
 - Allocate nodes
+
+    ```
+    [user@login01]$ salloc -p thor --nodes=2 --ntasks-per-node=2 --time=00:15:00 -w thor014,thorbf3a014
+    ```
 - Compile separate executables for each architecture
+    - Host
+
+        ```
+        [user@thor014]$ cd <miniMD-folder>/ref
+        [user@thor014]$ make clean && rm miniMD_openmpi_host
+        rm -r Obj_*
+        [user@thor014]$ make openmpi arch=intel
+        ... [ignoring output for readability]
+        [user@thor014]$ mv miniMD_openmpi miniMD_openmpi_host
+        ```
+
+    - BlueField
+
+        ```
+        [user@thor014]$ ssh thorbf3a014
+        [user@thorbf3a014]$ cd <miniMD-folder>/ref
+        [user@thorbf3a014]$ make clean && rm miniMD_openmpi_bf
+        [user@thorbf3a014]$ make openmpi arch=arm AVX=no
+        [user@thorbf3a014]$ mv miniMD_openmpi miniMD_openmpi_bf
+        ```
+
 - From a BlueField node, run a heterogeneous MPI job
 
-Since miniMD is OpenMP-enabled, we'll run two threads on each node.
+    ```
+    [user@thorbf3a014]$ mpirun -np 1 -H thor014 miniMD_openmpi_host -t 2 : -np 1 -H thorbf3a014 miniMD_openmpi_bf -t 2
+    # Create System:
+    # Done ....
+    # miniMD-Reference 2.0 (MPI+OpenMP) output ...
+    # Run Settings:
+            # MPI processes: 2
+            # OpenMP threads: 2
+    ...
+    [output truncated for readability]
+    ...
+    # Performance Summary:
+    # MPI_proc OMP_threads nsteps natoms t_total t_force t_neigh t_comm t_other performance perf/thread grep_string t_extra
+    2 2 100 131072 8.443480 5.010997 0.496549 2.861831 0.074103 1552345.720422 388086.430105 PERF_SUMMARY 0.026152
+    ```
 
-```console
-TODO
-```
+Your output should mimic the above, but the reported number of MPI processes and OpenMP threads
+should be the exact same. Again, we've done something simple yet more complex than what we did before.
+
+
+## BlueField and Beyond
+
+For further development, the above process can be followed - but hopefully with more automated
+processes than shown here. Additionally, the
+[Nvidia DOCA SDK](https://developer.nvidia.com/networking/doca) can be harnessed to extract
+optimum performance from the hardware.
