@@ -5,10 +5,11 @@
 #include <sstream>
 #include <string.h>
 
+#define MAXLEN_HOSTNAME 127 // @TODO: Determine this length more "canonically" using `sysconf()`
+
 using namespace std;
 
-int
-main(int argc, char* argv[])
+int main(int argc, char* argv[])
 {
   MPI_Init(&argc, &argv);
 
@@ -21,7 +22,6 @@ main(int argc, char* argv[])
 
   MPI_Barrier(MPI_COMM_WORLD);
 
-#define MAXLEN_HOSTNAME 127 // @TODO: Determine this length more "canonically" using `sysconf()`
   char hostname[MAXLEN_HOSTNAME+1];
   gethostname(hostname, MAXLEN_HOSTNAME);
 
