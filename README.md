@@ -10,7 +10,8 @@ computing nodes running on x86. Let's look at a simple example: running `hostnam
 and 1 traditional computing node. A traditional Slurm job executing on homogeneous architectures
 would be simple. However, multiple architectures introduces additional complexity.
 
-Slurm has capabilities for heterogeneous job execution. To learn more, look ()[]here TODO.
+Slurm has capabilities for heterogeneous job execution. To learn more, look
+[here](https://slurm.schedmd.com/heterogeneous_jobs.html).
 However, when Slurm jobs are dispatched, the environment variables aren't properly managed
 for this usecase. Thus, the user must manage it directly. We can do this by configuring
 some environment variables and our application versions in our `.bashrc` file. This ensures
@@ -41,7 +42,7 @@ hpcx_load
 ```
 
 From a Thor login node, let's allocate the nodes we want to use, ssh into the BlueField node we
-just allocated, then run a heterogeneous MPI command. Change the requested nodes and parameters
+just allocated (very important), then run a heterogeneous MPI command. Change the requested nodes and parameters
 as you see fit, but ensure that one traditional host and one BlueField are allocated.
 
 ```bash
@@ -70,7 +71,7 @@ is very helpful, otherwise, a basic cross-compilation setup can be used.
 
 Instead, let's start simpler and compile the host executable on the host, and the BlueField
 executable on the BlueField. `hello-bluefield.cpp` is a simple program made to show heterogeneous
-execution and code divergence based on node type. When running code on across traditional
+execution and code divergence based on node type. When running code across traditional
 compute nodes and BlueFields, it's potentially advantageous to have divergent execution paths -
 meaning the BlueField and host nodes execute different or varying amounts of work.
 
@@ -82,9 +83,9 @@ we execute the mpirun command from the BlueField node.
 salloc: Granted job allocation 99999
 [user@thor008]$ mpicxx hello-bluefield.cpp -o hello-bluefield-host.out
 [user@thor008]$ ssh thorbf3a008
-# Change directory to the proper place
+[user@thorbf3a008]$ cd <hello-bluefield-folder>
 [user@thorbf3a008]$ mpicxx hello-bluefield.cpp -o hello-bluefield-bf.out
-[user@thorbf3a008]$ mpirun -np 1 -H thor008:2 hello-bluefield-host.out : -np 1 -H thorbf3a008:2 hello-bluefield-bf.out
+[user@thorbf3a008]$ mpirun -np 1 -H thor008 hello-bluefield-host.out : -np 1 -H thorbf3a008 hello-bluefield-bf.out
 === Job: 2 processes ===
 [thor008:p0/2::c0] Hello, world. I'm a host node!
 [thorbf3a008:p1/2::c0] Hello, world. I'm a BlueField node!
@@ -93,8 +94,8 @@ salloc: Granted job allocation 99999
 ## MiniMD Host/BlueField Execution
 
 Further increasing the complexity of our example programs, let's now look at running
-[MiniMD](https://github.com/hpcgarage/miniMD/tree/force_on_bf) (a scaled-down version of the
-LAMMPS code) across BlueFields and Hosts. Since miniMD is OpenMP-enabled, we'll run two
+[MiniMD](https://github.com/hpcgarage/miniMD/tree/force_on_bf) (a scaled-down version of
+[LAMMPS](https://www.lammps.org/#gsc.tab=0)) across BlueFields and Hosts. Since miniMD is OpenMP-enabled, we'll run two
 threads on each node.
 
 The process of building and executing this is the
