@@ -17,9 +17,8 @@ main(int argc, char* argv[])
   MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 
   if(rank == 0)
-    cerr << "=== Job: "
-         << num_procs << " processes"
-         << " ===" << endl;
+    cerr << "=== Job: " << num_procs << " processes" << " ===" << endl;
+
   MPI_Barrier(MPI_COMM_WORLD);
 
 #define MAXLEN_HOSTNAME 127 // @TODO: Determine this length more "canonically" using `sysconf()`
