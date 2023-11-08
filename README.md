@@ -84,6 +84,40 @@ execution and code divergence based on node type. When running code across tradi
 compute nodes and BlueFields, it's potentially advantageous to have divergent execution paths -
 meaning the BlueField and host nodes execute different or varying amounts of work.
 
+### Aside: Determining Execution Hardware from Program
+
+From within a C/C++ program, there are a number of ways to determine the current execution
+environment's hardware (specifically traditional host vs BlueField).
+
+- Architecture
+    - Using `uname -i` or something similar
+    - Not necessarily true
+
+- Hostname
+    - Using `hostname`
+    - Cluster-specific and fragile
+
+- Environment Variable Set on Launch
+    - Cluster and hardware agnostic
+    - Pushes burden of appropriate variable setting to user at lunchtime
+
+- Two Separate Bash Scripts with Explicit Environment Management
+    - More explicit control but more cumbersome
+
+- PCI Device Presence (*Preferred Method*)
+    - Queries BlueField-specific PCI devices using `lspci -d <vendor>:<device>`
+    - BlueField devices contain PCI bridges that hosts connected to BFs don't have
+    - Mellanox (now NVIDIA) vendor ID: 15b3
+    - BlueField 2 PCI Bridge device ID: 1978
+    - BlueField 3 PCI Bridge device ID: 197b
+
+
+We use the hardware architecture approach for the `.bashrc` script above because those changes
+were explicitly for architecture differences that happened to align along the Host/BF boundary.
+For determining node type from within a program, we'll use the PCI device presence method as
+it's more robust. Look at `hello-bluefield.cpp`
+for implementation details.
+
 First, we allocate two nodes then separately compile both versions of the executable. Finally,
 we execute the mpirun command from the BlueField node.
 
