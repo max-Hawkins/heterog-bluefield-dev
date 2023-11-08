@@ -57,7 +57,7 @@ as you see fit, but ensure that one traditional host and one BlueField are alloc
 ```bash
 [user@login02]$ salloc -p thor --nodes=2 --ntasks-per-node=1 --time=00:05:00 -w thor014,thorbf3a014
 [user@thor014]$ ssh thorbf3a014
-[user@thorbf3a014]$ mpirun --oversubscribe -np 1 -H thor014 hostname : -np 1 -H thorbf3a014 hostname
+[user@thorbf3a014]$ mpirun -np 1 -H thor014 hostname : -np 1 -H thorbf3a014 hostname
 thorbf3a014.hpcadvisorycouncil.com
 thor014.hpcadvisorycouncil.com
 ```
