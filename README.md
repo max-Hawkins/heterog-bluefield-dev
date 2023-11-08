@@ -131,7 +131,7 @@ salloc: Granted job allocation 99999
 [user@thorbf3a008]$ mpirun -np 1 -H thor008 hello-bluefield-host.out : -np 1 -H thorbf3a008 hello-bluefield-bf.out
 === Job: 2 processes ===
 [thor008:p0/2::c0] Hello, world. I'm a host node!
-[thorbf3a008:p1/2::c0] Hello, world. I'm a BlueField node!
+[thorbf3a008:p1/2::c0] Hello, world. I'm a BlueField 3 node!
 ```
 
 ## MiniMD Host/BlueField Execution
