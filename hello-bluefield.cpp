@@ -9,6 +9,27 @@
 
 using namespace std;
 
+// Query and return the presence of a given PCI device where ID = "<vendorID>:<deviceID>"
+int pciDevicePresent(string ID){
+  string cmd = "lspci -d " + ID;
+  FILE * stream;
+  const int max_buffer = 256;
+  char buffer[max_buffer];
+
+  cmd.append(" 2>&1"); // Do we want STDERR?
+  stream = popen(cmd.c_str(), "r");
+
+  if (stream) {
+    char __ = fgetc(stream);
+    if(feof(stream))
+      return 0;
+    else
+      return 1;
+  }
+  return -1;
+}
+
+
 int main(int argc, char* argv[])
 {
   MPI_Init(&argc, &argv);
@@ -25,19 +46,22 @@ int main(int argc, char* argv[])
   char hostname[MAXLEN_HOSTNAME+1];
   gethostname(hostname, MAXLEN_HOSTNAME);
 
-  // Determine host node type via node name (specific to Thor cluster)
-  int isHost;
-  string node_type;
+  // Determine node type via PCI Device Presence (default to traditional host)
+  int isHost = 1;
+  string node_type = "host";
 
-  if(hostname[4] == 'b'){
-      isHost = 0;
-      node_type = "BlueField";
+  // Check for BlueField 2 PCI Bridge Device presence
+  if(pciDevicePresent("15b3:1978")){
+    isHost = 0;
+    node_type = "BlueField 2";
   }
-  else{
-      isHost = 1;
-      node_type = "host";
+  // Check for BlueField 3 PCI Bridge Device presence
+  if(pciDevicePresent("15b3:197b")){
+    isHost = 0;
+    node_type = "BlueField 3";
   }
 
+  // Cleanup hostnames for printing
   bool erase=false;
   int index=0;
   while(hostname[index]!='\0')
